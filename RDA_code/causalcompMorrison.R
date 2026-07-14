@@ -1738,34 +1738,8 @@ library(grid)
 
 # ============================================================
 
-tab_eff <- data.frame(
-  Exposure = c("FG","TG","bf","bmi","dbp","height","ldl","sbp","smoking"),
-  Gain     = c(-21.1,-14.9,169.0,122.0,58.0,-10.1,450.0,4.0,300.0)
-)
-tab_eff$Color <- ifelse(tab_eff$Gain >= 0, "green3", "red3")
-
-# Reshape into 3×3 matrix
-
-table_matrix <- matrix(
-  paste0(tab_eff$Exposure, "\n", sprintf("%.1f", tab_eff$Gain)),
-  nrow = 3, byrow = TRUE
-)
-color_matrix <- matrix(tab_eff$Color, nrow = 3, byrow = TRUE)
-
-# Prominent table grob
-
-gt <- tableGrob(
-  table_matrix,
-  rows = NULL,
-  theme = ttheme_minimal(
-    core = list(
-      fg_params = list(col = as.vector(color_matrix), fontsize = 20, fontface = "bold"),
-      bg_params = list(fill = "#E8E8E8", col = "black", lwd = 2)
-    ),
-    base_size = 20
-  )
-)
-gt$gp <- gpar(lwd = 3)   # thick outer border
+# [removed] hardcoded IB-Mode efficiency-gain inset table was incorrect
+# (contradicted Table S5, e.g. LDL 450 vs -56.1). Use Table S5 / regenerate_rda_outputs.py.
 
 # ============================================================
 
@@ -1851,14 +1825,7 @@ p_mode <- ggplot(plot_single, aes(x = logZ2_ref, y = ratio_ib_vs_ref)) +
 
 # ============================================================
 
-p_final <- p_mode +
-  annotation_custom(
-    grob = gt,
-    xmin = max(plot_single$logZ2_ref) - 4,
-    xmax = max(plot_single$logZ2_ref) + 0.5,
-    ymin = max(plot_single$ratio_ib_vs_ref) - 4.5,
-    ymax = max(plot_single$ratio_ib_vs_ref) + 0.5
-  )
+p_final <- p_mode
 
 p_final
 
