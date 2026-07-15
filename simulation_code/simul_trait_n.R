@@ -24,11 +24,13 @@
 
 rm(list = ls())
 suppressPackageStartupMessages({
+  library(IBMR)
   library(MASS)
   library(ggplot2)
   library(dplyr)
   library(tidyr)
   library(scales)
+  library(patchwork)
 })
 
 select <- dplyr::select
