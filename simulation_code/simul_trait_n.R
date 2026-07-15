@@ -165,57 +165,24 @@ compute_sigma_terms <- function(bx, by1, by2,
 # ESTIMATOR
 #######################################################################
 
-rho_hat_T <- function(bx, by1, by2,
-                      N_x, N_y1, N_y2,
-                      overlap = 0, rho_e = 0,
-                      eps = 1e-12) {
-  
-  ok <- complete.cases(bx, by1, by2) & is.finite(bx) & abs(bx) > eps
-  if (sum(ok) < 3) return(NA_real_)
-  
-  bx <- bx[ok]; by1 <- by1[ok]; by2 <- by2[ok]
-  th1 <- by1 / bx
-  th2 <- by2 / bx
-  
-  var_bx  <- 1 / N_x
-  var_by1 <- 1 / N_y1
-  var_by2 <- 1 / N_y2
-  cov_by12 <- gwas_cov_by_overlap(N_y1, N_y2, overlap, rho_e)
-  
-  sig <- compute_sigma_terms(bx, by1, by2, var_bx, var_by1, var_by2, cov_by12, eps)
-  s1 <- sig$s1; s2 <- sig$s2; s12 <- sig$s12
-  
-  ok2 <- complete.cases(s1, s2, s12) & s1 > 0 & s2 > 0
-  if (sum(ok2) < 3) return(NA_real_)
-  
-  th1 <- th1[ok2]; th2 <- th2[ok2]
-  s1 <- s1[ok2]; s2 <- s2[ok2]; s12 <- s12[ok2]
-  
-  w_raw <- 1 / sqrt((s1 + eps) * (s2 + eps))
-  w <- w_raw / sum(w_raw)
-  
-  th1b <- sum(w * th1)
-  th2b <- sum(w * th2)
-  d1 <- th1 - th1b
-  d2 <- th2 - th2b
-  
-  M11 <- sum(w * d1^2)
-  M22 <- sum(w * d2^2)
-  M12 <- sum(w * d1 * d2)
-  
-  B11 <- sum(w * (1 - w) * s1)
-  B22 <- sum(w * (1 - w) * s2)
-  B12 <- sum(w * (1 - w) * s12)
-  
-  S11 <- M11 - B11
-  S22 <- M22 - B22
-  S12 <- M12 - B12
-  
-  if (!is.finite(S11) || !is.finite(S22) || S11 <= 0 || S22 <= 0) return(NA_real_)
-  
-  rho <- S12 / sqrt(S11 * S22)
-  max(-1, min(1, rho))
+.cohet_pkg <- function(bx, by1, by2, N_x, N_y1, N_y2, overlap = 0, rho_e = 0) {
+  seX  <- rep(sqrt(1 / N_x),  length(bx))
+  seY1 <- rep(sqrt(1 / N_y1), length(bx))
+  seY2 <- rep(sqrt(1 / N_y2), length(bx))
+  I12  <- rho_e * overlap * min(N_y1, N_y2) / sqrt(N_y1 * N_y2)
+  IBMR::coheterogeneity_Q(
+    BetaXG = bx,
+    BetaYG_matrix = cbind(by1, by2),
+    seBetaXG = seX,
+    seBetaYG_matrix = cbind(seY1, seY2),
+    ldsc_intercepts = matrix(c(1, I12, I12, 1), 2, 2),
+    use_ldsc = TRUE,
+    min_K_pair = 3
+  )
 }
+
+rho_hat_T <- function(bx, by1, by2, N_x, N_y1, N_y2, overlap = 0, rho_e = 0, eps = 1e-12)
+  .cohet_pkg(bx, by1, by2, N_x, N_y1, N_y2, overlap, rho_e)$rho[1, 2]
 
 #######################################################################
 # INSTRUMENT SELECTION
@@ -325,105 +292,27 @@ simulate_outcomes <- function(arch, idx, N_y1, N_y2, overlap, rho_e) {
   list(by1=by1_true + E[,1], by2=by2_true + E[,2])
 }
 
-#######################################################################
-# ANALYTIC SE VIA NUMERICAL GRADIENT
-#######################################################################
-
-cov_betas_matrix <- function(K, N_x, N_y1, N_y2, overlap, rho_e) {
-  var_bx  <- 1 / N_x
-  var_by1 <- 1 / N_y1
-  var_by2 <- 1 / N_y2
-  cov_by12 <- gwas_cov_by_overlap(N_y1, N_y2, overlap, rho_e)
-  
-  Sigma_one <- matrix(c(
-    var_bx,   0,        0,
-    0,        var_by1,  cov_by12,
-    0,        cov_by12, var_by2
-  ), 3, 3, byrow = TRUE)
-  
-  Sigma <- matrix(0, 3*K, 3*K)
-  for (k in 1:K) {
-    idx <- (3*(k-1)+1):(3*k)
-    Sigma[idx, idx] <- Sigma_one
-  }
-  Sigma
-}
-
-numeric_grad_rho <- function(b, K, N_x, N_y1, N_y2, overlap, rho_e, step = NULL) {
-  if (is.null(step)) {
-    sbx  <- sqrt(1/N_x)
-    sby1 <- sqrt(1/N_y1)
-    sby2 <- sqrt(1/N_y2)
-    step <- c(rep(sbx, K), rep(sby1, K), rep(sby2, K)) * 1e-3
-    step[step == 0] <- 1e-8
-  }
-  
-  f0 <- {
-    bx  <- b[1:K]; by1 <- b[(K+1):(2*K)]; by2 <- b[(2*K+1):(3*K)]
-    rho_hat_T(bx, by1, by2, N_x, N_y1, N_y2, overlap, rho_e)
-  }
-  if (!is.finite(f0)) return(rep(NA_real_, length(b)))
-  
-  g <- numeric(length(b))
-  for (i in seq_along(b)) {
-    h <- step[i]
-    b_up <- b; b_dn <- b
-    b_up[i] <- b_up[i] + h
-    b_dn[i] <- b_dn[i] - h
-    
-    f_up <- {
-      bx  <- b_up[1:K]; by1 <- b_up[(K+1):(2*K)]; by2 <- b_up[(2*K+1):(3*K)]
-      rho_hat_T(bx, by1, by2, N_x, N_y1, N_y2, overlap, rho_e)
-    }
-    f_dn <- {
-      bx  <- b_dn[1:K]; by1 <- b_dn[(K+1):(2*K)]; by2 <- b_dn[(2*K+1):(3*K)]
-      rho_hat_T(bx, by1, by2, N_x, N_y1, N_y2, overlap, rho_e)
-    }
-    
-    if (!is.finite(f_up) || !is.finite(f_dn)) {
-      h <- h / 10
-      b_up[i] <- b[i] + h
-      b_dn[i] <- b[i] - h
-      f_up <- {
-        bx  <- b_up[1:K]; by1 <- b_up[(K+1):(2*K)]; by2 <- b_up[(2*K+1):(3*K)]
-        rho_hat_T(bx, by1, by2, N_x, N_y1, N_y2, overlap, rho_e)
-      }
-      f_dn <- {
-        bx  <- b_dn[1:K]; by1 <- b_dn[(K+1):(2*K)]; by2 <- b_dn[(2*K+1):(3*K)]
-        rho_hat_T(bx, by1, by2, N_x, N_y1, N_y2, overlap, rho_e)
-      }
-      if (!is.finite(f_up) || !is.finite(f_dn)) {
-        g[i] <- NA_real_
-        next
-      }
-    }
-    g[i] <- (f_up - f_dn) / (2*h)
-  }
-  g
-}
-
 estimate_rho_with_se <- function(bx, by1, by2,
                                  N_x, N_y1, N_y2,
                                  overlap=0, rho_e=0,
                                  alpha=0.05) {
   K <- length(bx)
-  rho <- rho_hat_T(bx, by1, by2, N_x, N_y1, N_y2, overlap, rho_e)
-  if (!is.finite(rho)) return(list(rho=NA, se=NA, ci_lower=NA, ci_upper=NA, pvalue=NA, K=K))
-  
-  b <- c(bx, by1, by2)
-  Sigma_b <- cov_betas_matrix(K, N_x, N_y1, N_y2, overlap, rho_e)
-  grad <- numeric_grad_rho(b, K, N_x, N_y1, N_y2, overlap, rho_e)
-  if (any(!is.finite(grad))) return(list(rho=rho, se=NA, ci_lower=NA, ci_upper=NA, pvalue=NA, K=K))
-  
-  var_rho <- as.numeric(t(grad) %*% Sigma_b %*% grad)
-  se <- sqrt(max(var_rho, 0))
-  
-  zcrit <- qnorm(1 - alpha/2)
-  ci_lower <- max(-1, rho - zcrit*se)
-  ci_upper <- min(1, rho + zcrit*se)
-  pvalue <- if(se > 0) 2*pnorm(-abs(rho/se)) else NA
-  
-  list(rho=rho, se=se, ci_lower=ci_lower, ci_upper=ci_upper, pvalue=pvalue, var=var_rho, K=K)
+  res <- .cohet_pkg(bx, by1, by2, N_x, N_y1, N_y2, overlap, rho_e)
+  rho <- res$rho[1, 2]
+  se <- res$se[1, 2]
+  z <- qnorm(1 - alpha / 2)
+  if (!is.finite(rho) || !is.finite(se)) {
+    return(list(rho = rho, se = NA, ci_lower = NA, ci_upper = NA, pvalue = NA, K = K))
+  }
+  list(
+    rho = rho,
+    se = se,
+    ci_lower = max(-1, rho - z * se),
+    ci_upper = min(1, rho + z * se),
+    pvalue = if (se > 0) 2 * pnorm(-abs(rho / se)) else NA,
+    var = se^2,
+    K = K
+  )
 }
 
 #######################################################################
@@ -1129,31 +1018,8 @@ generate_lemma_arch <- function(M,
 }
 
 #######################################################################
-# GWAS ERROR TERMS AND WEIGHTED ESTIMATOR
+# WEIGHTED ORACLE HELPERS
 #######################################################################
-
-gwas_cov_by_overlap <- function(N_y1, N_y2, overlap, rho_e) {
-  n_overlap <- overlap * min(N_y1, N_y2)
-  n_overlap <- max(0, min(n_overlap, min(N_y1, N_y2)))
-  
-  rho_e * n_overlap / (N_y1 * N_y2)
-}
-
-compute_sigma_terms <- function(bx, by1, by2,
-                                var_bx, var_by1, var_by2, cov_by12) {
-  bx2 <- bx^2 + eps
-  bx4 <- bx2^2
-  
-  s1 <- var_by1 / bx2 + by1^2 * var_bx / bx4
-  s2 <- var_by2 / bx2 + by2^2 * var_bx / bx4
-  s12 <- cov_by12 / bx2 + by1 * by2 * var_bx / bx4
-  
-  s1[!is.finite(s1)] <- NA_real_
-  s2[!is.finite(s2)] <- NA_real_
-  s12[!is.finite(s12)] <- NA_real_
-  
-  list(s1 = s1, s2 = s2, s12 = s12)
-}
 
 compute_oracle_weights <- function(bx, by1, by2,
                                    N_x, N_y1, N_y2,
@@ -1190,71 +1056,6 @@ compute_oracle_weights <- function(bx, by1, by2,
     s2 = sig$s2[ok],
     s12 = sig$s12[ok]
   )
-}
-
-rho_hat_T <- function(bx, by1, by2,
-                      N_x, N_y1, N_y2,
-                      overlap = 0,
-                      rho_e = 0) {
-  ok <- complete.cases(bx, by1, by2) &
-    is.finite(bx) &
-    abs(bx) > eps
-  
-  if (sum(ok) < 3) return(NA_real_)
-  
-  bx <- bx[ok]
-  by1 <- by1[ok]
-  by2 <- by2[ok]
-  
-  th1 <- by1 / bx
-  th2 <- by2 / bx
-  
-  wobj <- compute_oracle_weights(
-    bx = bx,
-    by1 = by1,
-    by2 = by2,
-    N_x = N_x,
-    N_y1 = N_y1,
-    N_y2 = N_y2,
-    overlap = overlap,
-    rho_e = rho_e
-  )
-  
-  if (is.null(wobj)) return(NA_real_)
-  
-  ok2 <- wobj$ok
-  
-  th1 <- th1[ok2]
-  th2 <- th2[ok2]
-  
-  w <- wobj$w
-  s1 <- wobj$s1
-  s2 <- wobj$s2
-  s12 <- wobj$s12
-  
-  th1b <- sum(w * th1)
-  th2b <- sum(w * th2)
-  
-  d1 <- th1 - th1b
-  d2 <- th2 - th2b
-  
-  M11 <- sum(w * d1^2)
-  M22 <- sum(w * d2^2)
-  M12 <- sum(w * d1 * d2)
-  
-  B11 <- sum(w * (1 - w) * s1)
-  B22 <- sum(w * (1 - w) * s2)
-  B12 <- sum(w * (1 - w) * s12)
-  
-  S11 <- M11 - B11
-  S22 <- M22 - B22
-  S12 <- M12 - B12
-  
-  if (!is.finite(S11) || !is.finite(S22) || S11 <= 0 || S22 <= 0) {
-    return(NA_real_)
-  }
-  
-  clip_corr(S12 / sqrt(S11 * S22))
 }
 
 weighted_selected_target <- function(arch, idx,
