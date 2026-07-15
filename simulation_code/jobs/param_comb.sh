@@ -17,7 +17,7 @@ for est_theta in "${est_theta_values[@]}"; do
         for N in "${N_values[@]}"; do
             for prop_invalid in "${prop_invalid_values[@]}"; do
                 for overlap in "${overlap_values[@]}"; do
-                    echo "$est_theta $thetaU $N $prop_invalid $phi_val $overlap" >> $param_file
+                    echo "$est_theta $thetaU $N $prop_invalid $overlap" >> $param_file
                 done
             done
         done

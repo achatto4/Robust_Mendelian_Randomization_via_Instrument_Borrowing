@@ -17,6 +17,9 @@ prop_invalid_vec = c(0.1, 0.3, 0.5, 0.7)
 overlap_vec = c(0.5, 0.75, 1)
 
 temp = as.integer(commandArgs(trailingOnly = TRUE))
+# Default parameter cell when run without command-line arguments
+# (indices into thetavec / thetaUvec / Nvec / prop_invalid_vec / overlap_vec)
+if (length(temp) == 0) temp = c(4, 1, 4, 2, 2)
 theta = thetavec[temp[1]] # True causal effect from X to Y
 thetaU = thetaUx = thetaUvec[temp[2]] # Effect of the confounder on Y/X
 theta_alt = 0.3

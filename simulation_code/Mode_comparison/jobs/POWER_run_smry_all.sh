@@ -35,11 +35,6 @@ phi=$6
 overlap=$7
 alt_ratio=$8
 
-Rscript POWER_bal_Inside_mode.R "$theta" "$theta_alt" "$thetaU" "$N" "$prop_invalid" "$phi" "$overlap" "$alt_ratio" &
-Rscript POWER_dir_noInside_mode.R "$theta" "$theta_alt" "$thetaU" "$N" "$prop_invalid" "$phi" "$overlap" "$alt_ratio" &
-Rscript POWER_bal_noInside_mode.R "$theta" "$theta_alt" "$thetaU" "$N" "$prop_invalid" "$phi" "$overlap" "$alt_ratio" &
-Rscript POWER_dir_Inside_mode.R "$theta" "$theta_alt" "$thetaU" "$N" "$prop_invalid" "$phi" "$overlap" "$alt_ratio" &
-
-wait
+Rscript ../scenarios/POWER_dir_noInside_mode.R "$theta" "$theta_alt" "$thetaU" "$N" "$prop_invalid" "$phi" "$overlap" "$alt_ratio"
 
 echo "Task ${SLURM_ARRAY_TASK_ID} completed with params: $params"

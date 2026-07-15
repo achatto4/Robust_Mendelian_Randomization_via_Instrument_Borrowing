@@ -57,6 +57,9 @@ overlap_vec = c(0.5, 0.75, 1)
 
 # Get command line arguments or use defaults
 temp = as.integer(commandArgs(trailingOnly = TRUE))
+# Default parameter cell when run without command-line arguments
+# (indices into thetavec / thetaUvec / Nvec / prop_invalid_vec / overlap_vec)
+if (length(temp) == 0) temp = c(4, 1, 4, 2, 2)
 
 # Set defaults if no command line arguments provided
 if (length(temp) == 0) {
