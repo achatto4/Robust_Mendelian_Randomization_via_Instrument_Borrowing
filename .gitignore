@@ -7,3 +7,6 @@
 .Ruserdata
 .Rproj.user/
 *.Rproj
+
+# Generated figures (produced by the plotting scripts; not source)
+*.eps
