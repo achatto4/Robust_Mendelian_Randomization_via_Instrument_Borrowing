@@ -309,8 +309,7 @@ outcome_dat_stk_mvp <- read_outcome_data(
 
 outcome_dat_TIA_mvp <- read_outcome_data(
   snps = snp_vector,
-  filename = ,
-  "./data/GWAS/MVP_data/MVP_base_traits/lifted_files/MVP_R4.1000G_AGR.CircTIA.EUR.GIA.dbGaP.lifted_with_header.bed.gz",
+  filename = "./data/GWAS/MVP_data/MVP_base_traits/lifted_files/MVP_R4.1000G_AGR.CircTIA.EUR.GIA.dbGaP.lifted_with_header.bed.gz",
   sep = "\t",
   snp_col = "SNP_ID",
   beta_col = "beta",
@@ -518,7 +517,7 @@ outcome_dat_PVD_mvp <- read_outcome_data(
 
 outcome_dat_A1C_Mean_INT_mvp <- read_outcome_data(
   snps = snp_vector,
-  filename = "./data/GWAS/MVP_data/MVP_base_traits/lifted_files/MVP_R4.1000G_AGR.A1C_Mean_INT.EUR.GIA.dbGaP.lifted_with_header.bed.gz" ,
+  filename = "./data/GWAS/MVP_data/MVP_base_traits/lifted_files/MVP_R4.1000G_AGR.A1C_Mean_INT.EUR.GIA.dbGaP.lifted_with_header.bed.gz",
   sep = "\t",
   snp_col = "SNP_ID",
   beta_col = "beta",
@@ -531,7 +530,7 @@ outcome_dat_A1C_Mean_INT_mvp <- read_outcome_data(
 
 outcome_dat_BMI_Mean_INT_mvp <- read_outcome_data(
   snps = snp_vector,
-  filename = "./data/GWAS/MVP_data/MVP_base_traits/lifted_files/MVP_R4.1000G_AGR.BMI_Mean_INT.EUR.GIA.dbGaP.lifted_with_header.bed.gz" ,
+  filename = "./data/GWAS/MVP_data/MVP_base_traits/lifted_files/MVP_R4.1000G_AGR.BMI_Mean_INT.EUR.GIA.dbGaP.lifted_with_header.bed.gz",
   sep = "\t",
   snp_col = "SNP_ID",
   beta_col = "beta",
@@ -557,8 +556,7 @@ outcome_dat_BNP_Mean_INT_mvp <- read_outcome_data(
 
 outcome_dat_BUN_BSP_Mean_INT_mvp <- read_outcome_data(
   snps = snp_vector,
-  filename = ,
-  "./data/GWAS/MVP_data/MVP_base_traits/lifted_files/MVP_R4.1000G_AGR.BUN_BSP_Mean_INT.EUR.GIA.dbGaP.lifted_with_header.bed.gz",
+  filename = "./data/GWAS/MVP_data/MVP_base_traits/lifted_files/MVP_R4.1000G_AGR.BUN_BSP_Mean_INT.EUR.GIA.dbGaP.lifted_with_header.bed.gz",
   sep = "\t",
   snp_col = "SNP_ID",
   beta_col = "beta",
@@ -714,7 +712,7 @@ outcome_dat_TroponinI_Mean_INT_mvp <- read_outcome_data(
 
 outcome_dat_Troponin_Mean_INT_mvp <- read_outcome_data(
   snps = snp_vector,
-  filename = "./data/GWAS/MVP_data/MVP_base_traits/lifted_files/MVP_R4.1000G_AGR.Troponin_Mean_INT.EUR.GIA.dbGaP.lifted_with_header.bed.gz" , , , , , , , , , , ,
+  filename = "./data/GWAS/MVP_data/MVP_base_traits/lifted_files/MVP_R4.1000G_AGR.Troponin_Mean_INT.EUR.GIA.dbGaP.lifted_with_header.bed.gz",
   sep = "\t",
   snp_col = "SNP_ID",
   beta_col = "beta",
@@ -811,7 +809,12 @@ outcome_traits <- list(
 
 final_results <- data.frame()
 # Run multimode MR across trait pairs
-source("../ib_mr_methods_pipeline.R")
+# Resolve the shared pipeline relative to this script's location (works from any cwd)
+.this_dir <- tryCatch(dirname(sys.frame(1)$ofile), error = function(e) getwd())
+if (is.null(.this_dir) || !nzchar(.this_dir)) .this_dir <- getwd()
+.pipeline <- file.path(.this_dir, "ib_mr_methods_pipeline.R")
+if (!file.exists(.pipeline)) .pipeline <- "ib_mr_methods_pipeline.R"  # fallback: cwd = RDA_code/
+source(.pipeline)
 
 for (trait1_name in names(outcome_traits)) {
   trait1_entry <- outcome_traits[[trait1_name]]
@@ -858,7 +861,6 @@ for (trait1_name in names(outcome_traits)) {
 library(dplyr)
 
 # NOTE: GWAS summary statistics must be downloaded separately and placed in ./data/GWAS/
-# See data/README.md for data sources and download instructions.
 # Output files are written to ./results/ (create this directory before running).
 
 

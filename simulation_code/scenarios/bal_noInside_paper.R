@@ -8,9 +8,7 @@ library(MRMix)
 library(penalized)
 library(ks)
 library(MRPRESSO)
-library(IBMR)  # coheterogeneity_Q is available as IBMR::coheterogeneity_Q
-library(IBMR)  # IBMODE is available as IBMR::IBMODE
-library(IBMR)  # IBPRESSO is available as IBMR::IBPRESSO
+library(IBMR)  # provides coheterogeneity_Q, IBMODE, IBPRESSO
 
 thetavec = c(0.2, 0, -0.2, 0.1, -0.1)
 thetaUvec = c(0.3, 0.5)
@@ -128,7 +126,7 @@ for (repind in 1:N_rep){
     est[repind,3+2] = res$Estimate
     CIlength = res$CIUpper-res$CILower
     if (length(CIlength)>1) print(paste("Repind",repind,"conmix multimodal"))
-    est[repind,3+12] = sum(CIlength)/1.96/2 ## Caution: this may be problematic
+    est[repind,3+12] = sum(CIlength)/1.96/2 # ConMix reports a profile-likelihood CI, not an SE; approximate SE = CI width / (2*1.96), as described in the paper
     est[repind,3+22] = T1-T0
     rm(res)
 
@@ -233,7 +231,7 @@ for (repind in 1:N_rep){
     # 10. IB-PRESSO
     T0 = proc.time()[3]
     res <- tryCatch({
-      ibpresso <- mr_presso_ib(
+      ibpresso <- IBMR::IBPRESSO(
         BetaOutcome = "BetaOutcome",
         BetaExposure = "BetaExposure",
         BetaAux     = "BetaAux",
