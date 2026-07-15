@@ -1,7 +1,8 @@
-# Robust Mendelian Randomization via Instrument Borrowing
+# Improving Mendelian Randomization Analysis by Instrument Borrowing from Auxiliary Outcome Traits
 
-Code accompanying the paper **"Robust Mendelian Randomization via Instrument
-Borrowing"** by Anagh Chattopadhyay and Nilanjan Chatterjee.
+Code accompanying the paper **"Improving Mendelian Randomization Analysis by
+Instrument Borrowing from Auxiliary Outcome Traits"** by Anagh Chattopadhyay and
+Nilanjan Chatterjee.
 
 This repository holds the **simulation** and **real-data analysis** code. The core
 instrument-borrowing methods (coheterogeneity screening, IB-Mode, IB-PRESSO) live
@@ -32,7 +33,9 @@ Other R packages used: `data.table`, `dplyr`, `tidyr`, `ggplot2`, `MASS`,
   - `plots/` — figure-generation / publication plotting scripts
   - `jobs/` — batch (SLURM) helpers
   - `Mode_comparison/` — IB-Mode vs IB-PRESSO type-I-error & power scenarios
-  - `Cohet_theory_validation.R` — finite-sample validation of the coheterogeneity SE
+  - `simul_trait_n.R` — finite-sample validation of the coheterogeneity statistic
+    and its standard error (generates the Figure 2 coverage plot); calls
+    `IBMR::coheterogeneity_Q`
 
 ## Usage
 
@@ -49,4 +52,4 @@ Rscript simulation_code/scenarios/bal_Inside_paper.R # a main simulation scenari
 
 ## Citation
 
-Chattopadhyay A, Chatterjee N. *Robust Mendelian Randomization via Instrument Borrowing.*
+Chattopadhyay A, Chatterjee N. *Improving Mendelian Randomization Analysis by Instrument Borrowing from Auxiliary Outcome Traits.*
