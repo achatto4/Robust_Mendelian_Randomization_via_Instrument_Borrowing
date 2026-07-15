@@ -750,7 +750,11 @@ print(dist_plot_with_lemma)
 #######################################################################
 #######################################################################
 
-rm(list = ls())
+rm(list = setdiff(
+  ls(),
+  c("gwas_cov_by_overlap", "compute_sigma_terms", ".cohet_pkg",
+    "rho_hat_T", "estimate_rho_with_se")
+))
 
 suppressPackageStartupMessages({
   library(MASS)
