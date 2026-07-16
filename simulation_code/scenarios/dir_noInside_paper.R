@@ -130,7 +130,7 @@ for (repind in 1:N_rep){
     T0 = proc.time()[3]
     res = IBMR::IBMODE(
       BetaXG = betahat_x.flt,
-      BetaYG_matrix = cbind(betahat_y.flt, betahat_y_alt.flt),
+      BetaYG_matrix = cbind(Outcome1 = betahat_y.flt, Outcome2 = betahat_y_alt.flt),
       seBetaXG = rep(1 / sqrt(nx), length(betahat_x.flt)),
       seBetaYG_matrix = cbind(rep(1 / sqrt(ny), length(betahat_y.flt)), rep(
         1 / sqrt(ny_alt), length(betahat_y_alt.flt)
@@ -140,8 +140,8 @@ for (repind in 1:N_rep){
       alpha = 0.05
     )
     T1 = proc.time()[3]
-    est[repind,3+4] = res$Estimate.1
-    est[repind,3+14] = res$SE.1
+    est[repind,3+4] = res$Estimate_Outcome1
+    est[repind,3+14] = res$SE_Outcome1
     est[repind,3+24] = T1-T0
     rm(res)
 
@@ -239,8 +239,8 @@ for (repind in 1:N_rep){
         seed = repind,
         SignifThreshold = 0.05
       )
-      b_val <- if (!is.null(ibpresso$corrected_beta)) ibpresso$corrected_beta else ibpresso$raw_beta
-      se_val <- if (!is.null(ibpresso$corrected_se)) ibpresso$corrected_se else ibpresso$raw_se
+      b_val <- if (!is.null(ibpresso$corrected_beta) && !is.na(ibpresso$corrected_beta)) ibpresso$corrected_beta else ibpresso$raw_beta
+      se_val <- if (!is.null(ibpresso$corrected_se) && !is.na(ibpresso$corrected_se)) ibpresso$corrected_se else ibpresso$raw_se
       list(b = b_val, se = se_val)
     }, error=function(e) list(b=NA,se=NA))
 

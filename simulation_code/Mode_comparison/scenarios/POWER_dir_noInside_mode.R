@@ -142,11 +142,11 @@ for (repind in seq_len(N_rep)) {
     if (repind == 1) {
       cohet <- coheterogeneity_Q(
         BetaXG = bx,
-        BetaYG_matrix = cbind(by, by_alt),
+        BetaYG_matrix = cbind(Outcome1 = by, Outcome2 = by_alt),
         seBetaXG = rep(1 / sqrt(nx), length(bx)),
         seBetaYG_matrix = cbind(rep(1 / sqrt(ny), length(by)), rep(1 / sqrt(ny_alt), length(by_alt)))
       )
-      cat("DN: Absolute CoHeterogeneity Q value:", abs(cohet$Q_corr_matrix)[1, 2], "\n")
+      cat("DN: Absolute CoHeterogeneity Q value:", abs(cohet$rho)[1, 2], "\n")
     }
 
     mr.obj <- mr_input(
@@ -166,7 +166,7 @@ for (repind in seq_len(N_rep)) {
     t0 <- proc.time()[3]
     res <- IBMR::IBMODE(
       BetaXG = bx,
-      BetaYG_matrix = cbind(by, by_alt),
+      BetaYG_matrix = cbind(Outcome1 = by, Outcome2 = by_alt),
       seBetaXG = rep(1 / sqrt(nx), length(bx)),
       seBetaYG_matrix = cbind(rep(1 / sqrt(ny), length(by)), rep(1 / sqrt(ny_alt), length(by_alt))),
       phi = phi_val,
@@ -174,8 +174,8 @@ for (repind in seq_len(N_rep)) {
       alpha = 0.05
     )
     t1 <- proc.time()[3]
-    est[repind, 5] <- res$Estimate.1
-    est[repind, 7] <- res$SE.1
+    est[repind, 5] <- res$Estimate_Outcome1
+    est[repind, 7] <- res$SE_Outcome1
     est[repind, 9] <- t1 - t0
   }
 }

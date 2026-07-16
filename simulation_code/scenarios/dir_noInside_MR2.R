@@ -233,14 +233,14 @@ for (repind in 1:N_rep) {
     if (repind == 1) {
       CoHetQ = coheterogeneity_Q(
         BetaXG = betahat_x.flt,
-        BetaYG_matrix = cbind(betahat_y.flt, betahat_y_alt.flt),
+        BetaYG_matrix = cbind(Outcome1 = betahat_y.flt, Outcome2 = betahat_y_alt.flt),
         seBetaXG = rep(1 / sqrt(nx), length(betahat_x.flt)),
         seBetaYG_matrix = cbind(
           rep(1 / sqrt(ny), length(betahat_y.flt)), 
           rep(1 / sqrt(ny_alt), length(betahat_y_alt.flt))
         )
       )
-      cat("DN: Absolute CoHeterogeneity Q value:", abs(CoHetQ$Q_corr_matrix)[1, 2], "\n\n")
+      cat("DN: Absolute CoHeterogeneity Q value:", abs(CoHetQ$rho)[1, 2], "\n\n")
     }
     
     # Create MR input object for standard methods
@@ -308,7 +308,7 @@ for (repind in 1:N_rep) {
       T0 = proc.time()[3]
       res = IBMR::IBMODE(
         BetaXG = betahat_x.flt,
-        BetaYG_matrix = cbind(betahat_y.flt, betahat_y_alt.flt),
+        BetaYG_matrix = cbind(Outcome1 = betahat_y.flt, Outcome2 = betahat_y_alt.flt),
         seBetaXG = rep(1 / sqrt(nx), length(betahat_x.flt)),
         seBetaYG_matrix = cbind(
           rep(1 / sqrt(ny), length(betahat_y.flt)), 
@@ -320,8 +320,8 @@ for (repind in 1:N_rep) {
       )
       T1 = proc.time()[3]
       runtime = T1 - T0
-      est[repind, get_col_idx("mode_new_phi1", "estimate")] = res$Estimate.1
-      est[repind, get_col_idx("mode_new_phi1", "se")] = res$SE.1
+      est[repind, get_col_idx("mode_new_phi1", "estimate")] = res$Estimate_Outcome1
+      est[repind, get_col_idx("mode_new_phi1", "se")] = res$SE_Outcome1
       est[repind, get_col_idx("mode_new_phi1", "time")] = runtime
       cat(sprintf("Done! (%.3f sec)\n", runtime))
       rm(res)
@@ -463,8 +463,8 @@ for (repind in 1:N_rep) {
           seed = repind,
           SignifThreshold = 0.05
         )
-        b_val <- if (!is.null(ibpresso$corrected_beta)) ibpresso$corrected_beta else ibpresso$raw_beta
-        se_val <- if (!is.null(ibpresso$corrected_se)) ibpresso$corrected_se else ibpresso$raw_se
+        b_val <- if (!is.null(ibpresso$corrected_beta) && !is.na(ibpresso$corrected_beta)) ibpresso$corrected_beta else ibpresso$raw_beta
+        se_val <- if (!is.null(ibpresso$corrected_se) && !is.na(ibpresso$corrected_se)) ibpresso$corrected_se else ibpresso$raw_se
         list(b = b_val, se = se_val)
       }, error = function(e) {
         cat("[ERROR] ")

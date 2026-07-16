@@ -173,10 +173,10 @@ make_plot_and_tables <- function(df, thr, out_eps, out_sig_csv, out_pval_csv, pl
     mutate(facet_lab = factor(facet_lab, levels = category_labels$facet_lab)) %>%
     filter(!is.na(perc_sig) & perc_sig >= 0 & perc_sig <= 100)
   
-  # ---- method ordering (IB-MODE with Weighted mode; IB-MR-PRESSO with MR-PRESSO) ----
+  # ---- method ordering (IB-MODE with Weighted mode; IB-PRESSO with MR-PRESSO) ----
   all_methods <- unique(df2$method)
   mode_methods <- c("IB-MODE", "Weighted mode")
-  presso_methods <- c("IB-MR-PRESSO", "MR-PRESSO")
+  presso_methods <- c("IB-PRESSO", "MR-PRESSO")
   remaining_methods <- setdiff(sort(all_methods), c(mode_methods, presso_methods))
   desired_method_order <- c(mode_methods, presso_methods, remaining_methods)
   
@@ -474,10 +474,10 @@ make_plot_and_tables <- function(df, thr, out_eps, out_sig_csv, out_pval_csv, pl
     mutate(facet_lab = factor(facet_lab, levels = category_labels$facet_lab)) %>%
     filter(!is.na(perc_sig) & perc_sig >= 0 & perc_sig <= 100)
   
-  # ---- method ordering (IB-MODE with Weighted mode; IB-MR-PRESSO with MR-PRESSO) ----
+  # ---- method ordering (IB-MODE with Weighted mode; IB-PRESSO with MR-PRESSO) ----
   all_methods <- unique(df2$method)
   mode_methods <- c("IB-MODE", "Weighted mode")
-  presso_methods <- c("IB-MR-PRESSO", "MR-PRESSO")
+  presso_methods <- c("IB-PRESSO", "MR-PRESSO")
   remaining_methods <- setdiff(sort(all_methods), c(mode_methods, presso_methods))
   desired_method_order <- c(mode_methods, presso_methods, remaining_methods)
   
@@ -743,13 +743,13 @@ mode_tab <- df_causal %>%
   group_by(exposure) %>%
   summarise(IB_Mode = mean(IB_Mode, na.rm = TRUE))
 
-# IB-MR-PRESSO vs MR-PRESSO
+# IB-PRESSO vs MR-PRESSO
 presso_tab <- df_causal %>%
-  filter(method %in% c("IB-MR-PRESSO", "MR-PRESSO")) %>%
+  filter(method %in% c("IB-PRESSO", "MR-PRESSO")) %>%
   group_by(exposure, outcome, method) %>%
   summarise(stat = mean(b^2 / se^2, na.rm = TRUE), .groups = "drop") %>%
   pivot_wider(names_from = method, values_from = stat) %>%
-  mutate(IB_PRESSO = 100 * (`IB-MR-PRESSO` - `MR-PRESSO`) / `MR-PRESSO`) %>%
+  mutate(IB_PRESSO = 100 * (`IB-PRESSO` - `MR-PRESSO`) / `MR-PRESSO`) %>%
   group_by(exposure) %>%
   summarise(IB_PRESSO = mean(IB_PRESSO, na.rm = TRUE))
 

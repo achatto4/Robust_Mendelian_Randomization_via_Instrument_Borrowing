@@ -99,7 +99,7 @@ for (repind in 1:N_rep){
     if (repind == 1) {
       CoHetQ = coheterogeneity_Q(
         BetaXG = betahat_x.flt,
-        BetaYG_matrix = cbind(betahat_y.flt, betahat_y_alt.flt),
+        BetaYG_matrix = cbind(Outcome1 = betahat_y.flt, Outcome2 = betahat_y_alt.flt),
         seBetaXG = rep(1 / sqrt(nx), length(betahat_x.flt)),
         seBetaYG_matrix = cbind(
           rep(1 / sqrt(ny), length(betahat_y.flt)), 
@@ -107,7 +107,7 @@ for (repind in 1:N_rep){
         )
       )
       
-      cat("DN: Absolute CoHeterogeneity Q value:", abs(CoHetQ$Q_corr_matrix)[1, 2], "\n")
+      cat("DN: Absolute CoHeterogeneity Q value:", abs(CoHetQ$rho)[1, 2], "\n")
     }
     
     mr.obj = mr_input(bx = betahat_x.flt, bxse = rep(1/sqrt(nx), length(betahat_x.flt)),
@@ -126,7 +126,7 @@ for (repind in 1:N_rep){
     T0 = proc.time()[3]
     res = IBMR::IBMODE(
       BetaXG = betahat_x.flt,
-      BetaYG_matrix = cbind(betahat_y.flt, betahat_y_alt.flt),
+      BetaYG_matrix = cbind(Outcome1 = betahat_y.flt, Outcome2 = betahat_y_alt.flt),
       seBetaXG = rep(1 / sqrt(nx), length(betahat_x.flt)),
       seBetaYG_matrix = cbind(rep(1 / sqrt(ny), length(betahat_y.flt)), rep(
         1 / sqrt(ny_alt), length(betahat_y_alt.flt)
@@ -136,8 +136,8 @@ for (repind in 1:N_rep){
       alpha = 0.05
     )
     T1 = proc.time()[3]
-    est[repind,3+2] = res$Estimate.1
-    est[repind,3+4] = res$SE.1
+    est[repind,3+2] = res$Estimate_Outcome1
+    est[repind,3+4] = res$SE_Outcome1
     est[repind,3+6] = T1-T0
     rm(res)
     
