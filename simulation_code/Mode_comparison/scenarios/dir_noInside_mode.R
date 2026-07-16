@@ -49,6 +49,7 @@ mr_methods = c("MRMode", "mode_new")
 colnames(est) = c("numIV", "varX_expl","varY_expl", mr_methods, paste0(mr_methods,"_se"), paste0(mr_methods,"_time"))
 # varX_expl: variance of X explained by IVs; varY_expl: variance of Y explained by IVs
 boot_num = 100
+dir.create("../../../results/simulation_results/mode_comp", recursive = TRUE, showWarnings = FALSE)
 for (repind in 1:N_rep){
   set.seed(6765 * repind)
   

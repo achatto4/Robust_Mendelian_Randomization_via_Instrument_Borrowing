@@ -212,6 +212,7 @@ base_name <- paste0(
   "_overlap", overlap
 )
 
+dir.create("../../../results/simulation_results/mode_comp", recursive = TRUE, showWarnings = FALSE)
 save(
   est,
   type1_summary,
