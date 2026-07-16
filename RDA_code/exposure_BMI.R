@@ -744,65 +744,65 @@ outcome_traits <- list(
   astm_mvp = list(
     data = outcome_dat_astm_mvp,
     aux = list(
-      OSA_mvp = outcome_dat_OSA_mvp,
-      CHF_mvp = outcome_dat_CHF_mvp,
-      t2d_mvp = outcome_dat_t1d_mvp
+      t1d_mvp = outcome_dat_t1d_mvp,  # ✓ significant, |rho|=0.4478, p=2.62e-08
+      CHF_mvp = outcome_dat_CHF_mvp,  # ✓ significant, |rho|=0.4824, p=1.31e-10
+      OSA_mvp = outcome_dat_OSA_mvp   # ✓ significant, |rho|=0.4853, p=2.41e-12
     )
   ),
   t2d_mvp = list(
     data = outcome_dat_T2D_mvp,
     aux = list(
-      t2d = outcome_dat_t2d,
-      logTG = outcome_dat_logTG,
-      HDL   = outcome_dat_HDL
+      HTN_mvp = outcome_dat_HTN_mvp,  # ✓ significant, |rho|=0.8567, p=0.00e+00
+      CCD_mvp = outcome_dat_CCD_mvp,  # ✓ significant, |rho|=0.8581, p=4.99e-97
+      CMG_mvp = outcome_dat_CMG_mvp   # ✓ significant, |rho|=0.9075, p=3.21e-19
     )
   ),
   cad_mvp = list(
     data = outcome_dat_CAD_mvp,
     aux = list(
-      cad2  = outcome_dat_cad2,
-      MI_mvp = outcome_dat_MI_mvp,
-      logTG = outcome_dat_logTG
+      PVD_mvp = outcome_dat_PVD_mvp,  # ✓ significant, |rho|=0.8782, p=2.75e-75
+      stk_mvp = outcome_dat_stk_mvp,  # ✓ significant, |rho|=0.8929, p=1.70e-09
+      CCD_mvp = outcome_dat_CCD_mvp   # ✓ significant, |rho|=0.9154, p=3.94e-55
     )
   ),
   stk_mvp = list(
     data = outcome_dat_stk_mvp,
     aux = list(
-      AP_mvp = outcome_dat_AP_mvp,
-      MI_mvp = outcome_dat_MI_mvp,
-      HDL    = outcome_dat_HDL
+      cad_mvp = outcome_dat_CAD_mvp,  # ✓ significant, |rho|=0.8929, p=1.70e-09
+      MI_mvp  = outcome_dat_MI_mvp,   # ✓ significant, |rho|=0.9428, p=3.30e-09
+      AP_mvp  = outcome_dat_AP_mvp    # ✓ significant, |rho|=0.9523, p=2.58e-09
     )
   ),
   eGFR_Mean_INT_mvp = list(
     data = outcome_dat_eGFR_Mean_INT_mvp,
     aux = list(
-      Creat_BSP_Mean_INT_mvp = outcome_dat_Creat_BSP_Mean_INT_mvp,
-      ckd = outcome_dat_ckd,
-      HDL = outcome_dat_HDL
+      HTN_mvp = outcome_dat_HTN_mvp,  # ✓ |rho|=0.3663, p=5.35e-49
+      t2d_mvp = outcome_dat_T2D_mvp,  # ✓ |rho|=0.3739, p=2.55e-73
+      BUN_BSP_Mean_INT_mvp = outcome_dat_BUN_BSP_Mean_INT_mvp   # ✓ |rho|=0.4242, p=1.30e-80
     )
   ),
   HTN_mvp = list(
     data = outcome_dat_HTN_mvp,
     aux = list(
-      sbp   = outcome_dat_sbp,
-      logTG = outcome_dat_logTG,
-      pp    = outcome_dat_pp
+      CHF_mvp = outcome_dat_CHF_mvp,  # ✓ |rho|=0.9273, p=0.00e+00
+      CCD_mvp = outcome_dat_CCD_mvp,  # ✓ |rho|=0.9365, p=2.97e-93
+      CMG_mvp = outcome_dat_CMG_mvp   # ✓ |rho|=0.9544, p=2.68e-18
     )
   ),
   HDLC_Mean_INT_mvp = list(
     data = outcome_dat_HDLC_Mean_INT_mvp,
     aux = list(
-      HDL   = outcome_dat_HDL,
-      logTG = outcome_dat_logTG,
-      t2d   = outcome_dat_t2d
+      Trig_Mean_INT_mvp = outcome_dat_Trig_Mean_INT_mvp,  # ✓ |rho|=0.7731, p=0.00e+00
+      CCD_mvp = outcome_dat_CCD_mvp,  # ✓ |rho|=0.7752, p=1.05e-80
+      CMG_mvp = outcome_dat_CMG_mvp   # ✓ |rho|=0.8081, p=6.28e-17
     )
   ),
   LDLC_Mean_INT_mvp = list(
     data = outcome_dat_LDLC_Mean_INT_mvp,
     aux = list(
-      LDL = outcome_dat_LDL,
-      TC  = outcome_dat_TC,
-      t2d = outcome_dat_t2d
+      HTN_mvp = outcome_dat_HTN_mvp,  # ✓ |rho|=0.6897, p=3.28e-240
+      t2d_mvp = outcome_dat_T2D_mvp,  # ✓ |rho|=0.7020, p=0.00e+00
+      t1d_mvp = outcome_dat_t1d_mvp   # ✓ |rho|=0.7028, p=3.79e-120
     )
   )
 )
@@ -845,7 +845,9 @@ for (trait1_name in names(outcome_traits)) {
       exposure_data  = bmi_exp_dat1,
       outcome_data1  = trait1_data,
       outcome_data2  = trait2_data,
-      phi            = 0.5,
+      outcome1_name  = trait1_name,
+      outcome2_name  = trait2_name,
+      phi            = 1,
       n_boot         = 100,
       alpha          = 0.05,
       count          = count,
@@ -868,11 +870,11 @@ final_results <- final_results %>%
   arrange(trait1, method) %>%
   group_by(trait1) %>%
   filter(
-    method %in% c("new_method_weighted", "IB-MR-PRESSO") |
+    method %in% c("IB-Mode", "IB-MR-PRESSO") |
       !duplicated(method)
   ) %>%
   mutate(
-    trait2 = ifelse(method %in% c("new_method_weighted", "IB-MR-PRESSO"), trait2, NA_character_)
+    trait2 = ifelse(method %in% c("IB-Mode", "IB-MR-PRESSO"), trait2, NA_character_)
   ) %>%
   ungroup()
 

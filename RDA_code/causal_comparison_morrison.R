@@ -107,7 +107,7 @@ df_all <- map2_dfr(data_list, names(data_list), ~ {
       },
       file = .y,
       method = case_when(
-        str_trim(method) == "new_method_weighted" ~ "IB-MODE",
+        str_trim(method) == "IB-Mode" ~ "IB-MODE",
         str_trim(method) == "IB-MR-PRESSO" ~ "IB-PRESSO",
         TRUE ~ str_trim(method)
       )
@@ -402,7 +402,7 @@ df_all <- map2_dfr(data_list, names(data_list), ~ {
       },
       file = .y,
       method = case_when(
-        str_trim(method) == "new_method_weighted" ~ "IB-MODE",
+        str_trim(method) == "IB-Mode" ~ "IB-MODE",
         str_trim(method) == "IB-MR-PRESSO" ~ "IB-PRESSO",
         TRUE ~ str_trim(method)
       )

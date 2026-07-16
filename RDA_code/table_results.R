@@ -25,9 +25,9 @@ process_file <- function(file_path) {
   
   # IB methods
   df_ib <- df %>%
-    dplyr::filter(method %in% c("new_method_weighted","IB-MR-PRESSO")) %>%
+    dplyr::filter(method %in% c("IB-Mode","IB-MR-PRESSO")) %>%
     dplyr::mutate(
-      method_label = ifelse(method == "new_method_weighted", "IB-MODE", "IB-MR-PRESSO"),
+      method_label = ifelse(method == "IB-Mode", "IB-MODE", "IB-MR-PRESSO"),
       lower = b - 1.96*se,
       upper = b + 1.96*se,
       ib_cell = sprintf("\\makecell{%0.2f \\\\ (%0.2f, %0.2f)}", b, lower, upper)  # <<< Only one backslash!

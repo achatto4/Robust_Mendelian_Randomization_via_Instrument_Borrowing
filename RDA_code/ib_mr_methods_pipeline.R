@@ -4,6 +4,15 @@ if (!requireNamespace("IBMR", quietly = TRUE)) {
   stop("Package 'IBMR' is required. Install with: remotes::install_github('achatto4/IBMR')")
 }
 
+# Cross-trait LDSC intercept helper for the IB-Mode C4 (outcome-sample-overlap) correction.
+# Resolved relative to common run locations; if absent, .LDSC_I stays NULL (independent bootstrap).
+.ldsc_helper_cand <- c("ldsc_cov_helper.R", "RDA_code/ldsc_cov_helper.R")
+.ldsc_helper_hit  <- .ldsc_helper_cand[file.exists(.ldsc_helper_cand)]
+if (length(.ldsc_helper_hit)) source(.ldsc_helper_hit[1])
+# Resolve LDSC_intercepts.csv next to the helper (in-repo only); NULL if not shipped.
+.LDSC_I <- if (exists("load_ldsc_intercepts") && length(.ldsc_helper_hit))
+  load_ldsc_intercepts(file.path(dirname(.ldsc_helper_hit[1]), "LDSC_intercepts.csv")) else NULL
+
 empty_result_row <- function(method, nsnp = NA) {
   data.frame(method = method, nsnp = nsnp, b = NA, se = NA, pval = NA)
 }
@@ -263,7 +272,7 @@ harmonize_and_evaluate <- function(
     count = NA,
     pressed_seed = 2025,
     presso_nmax = 500,
-    ldsc_intercept = NULL
+    outcome1_name = NULL, outcome2_name = NULL
 ) {
   # Step 1: harmonize and keep common SNPs.
   prepared <- prepare_common_instruments(exposure_data, outcome_data1, outcome_data2, pval_threshold)
@@ -290,6 +299,9 @@ harmonize_and_evaluate <- function(
   filtered_data11_presso <- presso_subset$filtered_data11_presso
   filtered_data21_presso <- presso_subset$filtered_data21_presso
 
+  # C4: cross-trait LD-score intercept for this (primary, auxiliary) outcome pair.
+  ldsc_intercept <- if (!is.null(outcome1_name) && !is.null(outcome2_name) && !is.null(.LDSC_I))
+    ldsc_I12(outcome1_name, outcome2_name, .LDSC_I) else NULL
   row_ibmode <- run_ibmode(filtered_data1, filtered_data2, phi, n_boot, alpha, ldsc_intercept = ldsc_intercept)
   row_ibpresso <- run_ibpresso(filtered_data11_presso, filtered_data21_presso, pressed_seed)
 
