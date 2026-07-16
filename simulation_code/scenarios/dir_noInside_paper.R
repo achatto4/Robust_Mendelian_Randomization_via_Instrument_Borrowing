@@ -8,7 +8,7 @@ library(MRMix)
 library(penalized)
 library(ks)
 library(MRPRESSO)
-library(IBMR)  # provides coheterogeneity_Q, IBMODE, IBPRESSO
+library(IBMR)  # provides IBMODE, IBPRESSO
 
 thetavec = c(0.2, 0, -0.2, 0.1, -0.1)
 thetaUvec = c(0.3, 0.5)
@@ -71,7 +71,6 @@ for (repind in 1:N_rep){
   alpha_alt[ind2_1] = rnorm(length(ind2_1), mean = 0.003, sd = sqrt(sigma2y_td))
   alpha_alt[ind3_1] = rnorm(length(ind3_1), mean = 0.003, sd = sqrt(sigma2y))
   phi[union(ind2,ind2_1)] = rnorm(length(union(ind2,ind2_1)), mean = 0, sd = sqrt(sigma2u))
-  phi_full = phi
   phi_alt[ind2_1] = phi[ind2_1]
   phi[-ind2] = 0
   betax = gamma + thetaUx * phi
@@ -93,20 +92,6 @@ for (repind in 1:N_rep){
     betahat_x.flt = betahat_x[ind_filter]
     betahat_y.flt = betahat_y[ind_filter]
     betahat_y_alt.flt = betahat_y_alt[ind_filter]
-
-    if (repind == 1) {
-      CoHetQ = coheterogeneity_Q(
-        BetaXG = betahat_x.flt,
-        BetaYG_matrix = cbind(betahat_y.flt, betahat_y_alt.flt),
-        seBetaXG = rep(1 / sqrt(nx), length(betahat_x.flt)),
-        seBetaYG_matrix = cbind(
-          rep(1 / sqrt(ny), length(betahat_y.flt)),
-          rep(1 / sqrt(ny_alt), length(betahat_y_alt.flt))
-        )
-      )
-
-      cat("DN: Absolute CoHeterogeneity Q value:", abs(CoHetQ$Q_corr_matrix)[1, 2], "\n")
-    }
 
     mr.obj = mr_input(bx = betahat_x.flt, bxse = rep(1/sqrt(nx), length(betahat_x.flt)),
                       by = betahat_y.flt, byse = rep(1/sqrt(ny), length(betahat_y.flt)))

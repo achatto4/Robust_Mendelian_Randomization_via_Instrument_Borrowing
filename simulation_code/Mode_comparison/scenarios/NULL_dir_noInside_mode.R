@@ -51,13 +51,8 @@ pi2 <- 0.02 * prop_invalid
 sigma2x <- 5e-5
 sigma2y <- 5e-5
 
-if (FALSE) {
-  sigma2x_td <- 5e-5
-  sigma2y_td <- 5e-5
-} else {
-  sigma2u <- 1e-4
-  sigma2x_td <- sigma2y_td <- (5e-5) - thetaU * thetaUx * sigma2u
-}
+sigma2u <- 1e-4
+sigma2x_td <- sigma2y_td <- (5e-5) - thetaU * thetaUx * sigma2u
 
 print(paste(
   "Scenario", "DN",

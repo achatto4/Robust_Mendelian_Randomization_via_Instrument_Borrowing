@@ -61,6 +61,17 @@ temp = as.integer(commandArgs(trailingOnly = TRUE))
 # (indices into thetavec / thetaUvec / Nvec / prop_invalid_vec / overlap_vec)
 if (length(temp) == 0) temp = c(4, 1, 4, 2, 2)
 
+# Set defaults if no command line arguments provided
+if (length(temp) == 0) {
+  message("No command line arguments provided. Using defaults:")
+  temp <- c(1, 1, 3, 1, 1)  # Default: theta=0.2, thetaU=0.3, N=1e5, prop_invalid=0.1, overlap=0.5
+  message(paste("  theta index =", temp[1], "(theta =", thetavec[temp[1]], ")"))
+  message(paste("  thetaU index =", temp[2], "(thetaU =", thetaUvec[temp[2]], ")"))
+  message(paste("  N index =", temp[3], "(N =", Nvec[temp[3]], ")"))
+  message(paste("  prop_invalid index =", temp[4], "(prop_invalid =", prop_invalid_vec[temp[4]], ")"))
+  message(paste("  overlap index =", temp[5], "(overlap =", overlap_vec[temp[5]], ")"))
+}
+
 # Extract parameters
 theta = thetavec[temp[1]] # True causal effect from X to Y
 thetaU = thetaUx = thetaUvec[temp[2]] # Effect of the confounder on Y/X
@@ -648,3 +659,4 @@ cat("\n========================================\n")
 cat("SIMULATION COMPLETE!\n")
 cat("========================================\n")
 message(paste("Results saved to:", output_file))
+

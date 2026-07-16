@@ -275,40 +275,6 @@ fig4 <- ggplot(fig4_df, aes(x = theta_alt, y = mean_pct, color = factor(alpha), 
   theme_pub
 
 # Figure 5: scatter-grid style calibration plot (similar to requested style), no NA rows.
-# --- ORIGINAL VERSION (all four scenarios BI/BN/DI/DN, all overlaps) -- COMMENTED OUT per reviewer (F2) ---
-# fig5 <- dat %>%
-#   filter(alpha %in% plot_alpha) %>%
-#   mutate(type1_ib_mode_plot = pmax(type1_ib_mode, min(plot_alpha) / 10)) %>%
-#   ggplot(aes(x = alpha, y = type1_ib_mode_plot)) +
-#   geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red", linewidth = 0.6) +
-#   geom_smooth(method = "lm", se = FALSE, color = "black", linewidth = 0.9) +
-#   geom_point(
-#     aes(color = factor(N), shape = factor(prop_invalid)),
-#     alpha = 0.65,
-#     size = 2.0,
-#     position = position_jitter(width = 0.0004, height = 0.0)
-#   ) +
-#   facet_grid(theta_alt ~ scenario, labeller = label_both) +
-#   scale_x_continuous(
-#     trans = "log10",
-#     breaks = plot_alpha,
-#     labels = scales::label_number(accuracy = 0.001)
-#   ) +
-#   scale_y_continuous(
-#     trans = "log10",
-#     breaks = plot_alpha,
-#     labels = scales::label_number(accuracy = 0.001)
-#   ) +
-#   labs(
-#     title = "IB-Mode Type-I Error Calibration (phi = 1, theta = 0)",
-#     subtitle = "Panels by scenario and secondary-trait effect; both axes use log scale",
-#     x = "Nominal significance level",
-#     y = "Observed type-I error",
-#     color = "Sample size (N)",
-#     shape = "Invalid IV proportion"
-#   ) +
-#   theme_pub
-
 # --- REVISED VERSION (F2): restrict to InSIDE-violated scenarios only (BN, DN) at D_ov = 0.75,
 #     i.e. the same scenario family as main-text Figure 3. Scenario codes:
 #     B=balanced / D=directional pleiotropy ; I=InSIDE satisfied / N=noInside (InSIDE violated).
