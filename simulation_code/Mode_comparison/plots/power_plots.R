@@ -7,14 +7,8 @@ suppressPackageStartupMessages({
   library(readr)
 })
 
-if (!requireNamespace("xtable", quietly = TRUE)) {
-  stop("Package 'xtable' is required. Install with: install.packages('xtable')")
-}
-
 args <- commandArgs(trailingOnly = TRUE)
 results_dir <- if (length(args) >= 1) args[1] else "../../../results/simulation_results/mode_comp_power"
-out_dir <- if (length(args) >= 2) args[2] else file.path(results_dir, "POWER_reports")
-dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
 message("Reading POWER summaries from: ", normalizePath(results_dir, mustWork = FALSE))
 
@@ -77,41 +71,6 @@ if (n_after == 0) stop("All rows were filtered out; no usable data for tables/pl
 preferred_alpha <- c(0.005, 0.01, 0.05, 0.1)
 plot_alpha <- preferred_alpha[preferred_alpha %in% sort(unique(dat$alpha))]
 if (length(plot_alpha) == 0) plot_alpha <- sort(unique(dat$alpha))
-
-write_xtable <- function(df, file, caption, label, digits = 2) {
-  tab <- xtable::xtable(df, caption = caption, label = label, digits = digits)
-  print(
-    tab,
-    file = file,
-    include.rownames = FALSE,
-    sanitize.text.function = identity,
-    caption.placement = "top",
-    table.placement = "htbp"
-  )
-}
-
-# -----------------------------
-# Tables
-# -----------------------------
-
-# Table 1: Power vs auxiliary sample size (NxNy_alt_ratio) for IB-Mode
-power_aux_tbl <- dat %>%
-  group_by(theta, alpha, NxNy_alt_ratio) %>%
-  summarise(
-    mean_power_pct = mean(power_ibmode_pct),
-    q10_pct = quantile(power_ibmode_pct, 0.10),
-    q90_pct = quantile(power_ibmode_pct, 0.90),
-    settings = n(),
-    .groups = "drop"
-  ) %>%
-  arrange(theta, alpha, NxNy_alt_ratio)
-
-write_xtable(
-  power_aux_tbl,
-  file.path(out_dir, "POWER_table_ibmode_auxN.tex"),
-  caption = "IB-Mode power (percent) versus auxiliary outcome sample-size ratio $N_{alt}/N$ (summarized over scenarios; fixed $N=10^5$, invalid-IV proportion 0.5, overlap 0.75).",
-  label = "tab:power_ibmode_auxN"
-)
 
 # -----------------------------
 # Figures
@@ -181,29 +140,5 @@ fig2 <- ggplot(fig2_df, aes(x = theta_alt, y = mean_power, color = factor(alpha)
   ) +
   theme_pub
 
-# Figure 3: Heatmap of power vs primary effect and auxiliary sample size
-fig3_df <- dat %>%
-  filter(alpha %in% plot_alpha) %>%
-  group_by(theta, alpha, NxNy_alt_ratio) %>%
-  summarise(mean_power = mean(power_ibmode_pct), .groups = "drop")
-
-fig3 <- ggplot(fig3_df, aes(x = factor(NxNy_alt_ratio), y = factor(theta), fill = mean_power)) +
-  geom_tile(color = "white", linewidth = 0.5) +
-  geom_text(aes(label = sprintf("%.1f", mean_power)), size = 3.1) +
-  facet_wrap(~ alpha, nrow = 1, labeller = label_both) +
-  scale_fill_gradient(low = "#f7fbff", high = "#08306b", name = "Power (%)") +
-  labs(
-    title = "IB-Mode Power vs Auxiliary Sample Size",
-    subtitle = "Averaged over scenario and secondary-trait effect; fixed N = 1e5, invalid-IV proportion = 0.5, overlap = 0.75",
-    x = expression(N/N[alt]),
-    y = expression(theta)
-  ) +
-  theme_pub
-
-# Save figures
-
-ggsave(file.path(out_dir, "POWER_fig1_power_vs_auxN.png"), fig1, width = 12.5, height = 6.5, dpi = 320)
-ggsave(file.path(out_dir, "POWER_fig2_power_vs_thetaAlt.png"), fig2, width = 12.5, height = 6.5, dpi = 320)
-ggsave(file.path(out_dir, "POWER_fig3_heatmap_power_auxN.png"), fig3, width = 10.5, height = 5.2, dpi = 320)
-
-message("Done. Wrote POWER tables and figures to: ", normalizePath(out_dir, mustWork = FALSE))
+# fig1 and fig2 are the IB-Mode power figures used in the paper;
+# they are built above as ggplot objects — display or export them as needed.
