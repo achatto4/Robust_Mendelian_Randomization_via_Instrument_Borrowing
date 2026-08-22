@@ -4,6 +4,7 @@ if (!requireNamespace("IBMR", quietly = TRUE)) {
   stop("Package 'IBMR' is required. Install with: remotes::install_github('achatto4/IBMR')")
 }
 
+
 # Cross-trait LDSC intercept helper for the IB-Mode C4 (outcome-sample-overlap) correction.
 # Resolved relative to common run locations; if absent, .LDSC_I stays NULL (independent bootstrap).
 .ldsc_helper_cand <- c("ldsc_cov_helper.R", "RDA_code/ldsc_cov_helper.R")
@@ -116,7 +117,7 @@ run_ibpresso <- function(filtered_data11_presso, filtered_data21_presso, pressed
       data = ibpresso_df,
       OUTLIERtest = TRUE,
       DISTORTIONtest = FALSE,
-      NbDistribution = 5000,
+      NbDistribution = 10000,
       seed = pressed_seed,
       SignifThreshold = 0.05
     )
@@ -168,8 +169,8 @@ run_mrpresso <- function(filtered_data11_presso, count, pressed_seed) {
       SdExposure = "SdExposure",
       data = presso_df,
       OUTLIERtest = TRUE,
-      DISTORTIONtest = FALSE,
-      NbDistribution = 5000,
+      DISTORTIONtest = TRUE,
+      NbDistribution = 10000,
       seed = pressed_seed,
       SignifThreshold = 0.05
     )
@@ -179,18 +180,17 @@ run_mrpresso <- function(filtered_data11_presso, count, pressed_seed) {
     return(empty_result_row("MR-PRESSO", nsnp = nsnp))
   }
 
-  results <- fit[["Main MR results"]]
-  corrected <- results[results$`MR Analysis` == "Outlier-corrected", ]
-  if (nrow(corrected) == 0 || is.na(corrected$`Causal Estimate`[1])) {
-    corrected <- results[results$`MR Analysis` == "Raw", ]
-  }
-
+  ## Outlier-corrected estimate; the raw fit when no instrument was removed.
+  mrp <- .presso_corrected(fit)
+  n_post <- nsnp - mrp$n_outliers
+  df_p   <- if (mrp$corrected && n_post > 1) n_post - 1 else
+            if (nsnp > 1) nsnp - 1 else NA
   data.frame(
     method = "MR-PRESSO",
     nsnp = nsnp,
-    b = corrected$`Causal Estimate`[1],
-    se = corrected$Sd[1],
-    pval = corrected$`P-value`[1]
+    b = mrp$b,
+    se = mrp$se,
+    pval = if (!is.na(df_p)) 2 * stats::pt(-abs(mrp$b / mrp$se), df = df_p) else NA
   )
 }
 
@@ -271,7 +271,12 @@ harmonize_and_evaluate <- function(
     n_CML,
     count = NA,
     pressed_seed = 2025,
-    presso_nmax = 500,
+    ## Computational cap on the instruments passed to the two PRESSO arms,
+    ## whose cost is O(NbDistribution * K); the other methods use the full
+    ## instrument set.  At K <= 200 and NbDistribution = 10000 the bootstrap
+    ## resolution K/NbDistribution = 0.02 stays below the 0.05 per-SNP
+    ## threshold.
+    presso_nmax = 200,
     outcome1_name = NULL, outcome2_name = NULL
 ) {
   # Step 1: harmonize and keep common SNPs.

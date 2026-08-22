@@ -1,3 +1,4 @@
+
 # Summary level simulations with balanced pleiotropy and InSIDE assumption satisfied
 rm(list = ls())
 library(data.table)
@@ -149,29 +150,27 @@ for (repind in 1:N_rep){
     # 5. MR-PRESSO
     T0 = proc.time()[3]
     res <- tryCatch({
+      presso_df <- data.frame(
+          BetaOutcome = betahat_y.flt,
+          BetaExposure = betahat_x.flt,
+          SdOutcome = rep(1/sqrt(ny), length(betahat_y.flt)),
+          SdExposure = rep(1/sqrt(nx), length(betahat_x.flt))
+      )
       presso <- MRPRESSO::mr_presso(
         BetaOutcome = "BetaOutcome",
         BetaExposure = "BetaExposure",
         SdOutcome = "SdOutcome",
         SdExposure = "SdExposure",
-        data = data.frame(
-          BetaOutcome = betahat_y.flt,
-          BetaExposure = betahat_x.flt,
-          SdOutcome = rep(1/sqrt(ny), length(betahat_y.flt)),
-          SdExposure = rep(1/sqrt(nx), length(betahat_x.flt))
-        ),
+        data = presso_df,
         OUTLIERtest = TRUE,
-        DISTORTIONtest = FALSE,
-        NbDistribution = 5000,
+        DISTORTIONtest = TRUE,
+        NbDistribution = 10000,
         seed = repind,
         SignifThreshold = 0.05
       )
-      results <- presso[["Main MR results"]]
-      corrected <- results[results$`MR Analysis` == "Outlier-corrected", ]
-      if (is.na(corrected$`Causal Estimate`)) {
-        corrected <- results[results$`MR Analysis` == "Raw", ]
-      }
-      list(b = corrected$`Causal Estimate`, se = corrected$Sd)
+      ## Outlier-corrected estimate; the raw fit when no instrument was removed.
+      mrp <- .presso_corrected(presso)
+      list(b = mrp$b, se = mrp$se)
     }, error=function(e) list(b=NA,se=NA))
 
     T1 = proc.time()[3]
@@ -236,7 +235,7 @@ for (repind in 1:N_rep){
         ),
         OUTLIERtest = TRUE,
         DISTORTIONtest = FALSE,
-        NbDistribution = 5000,
+        NbDistribution = 10000,
         seed = repind,
         SignifThreshold = 0.05
       )

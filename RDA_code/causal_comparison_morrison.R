@@ -644,7 +644,7 @@ plot_wide_presso <- df_all_sig %>%
 plot_wide_all <- bind_rows(plot_wide_mode, plot_wide_presso)
 
 #################################################################################
-# NEW CODE: 2x1 plot with only IB/Reference ratio
+# 2x1 plot: IB vs reference-only ratio
 #################################################################################
 
 # ---- Prepare data for 2x1 plot (IB/Reference only) ----
