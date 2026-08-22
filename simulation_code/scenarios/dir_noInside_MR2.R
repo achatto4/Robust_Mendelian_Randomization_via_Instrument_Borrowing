@@ -1,5 +1,12 @@
-
+# Summary level simulations with directional pleiotropy and InSIDE assumption violated (MR2 comparison)
 rm(list = ls())
+
+# Shared helper: reads MR-PRESSO's outlier-corrected row (repository root).
+.pc_cand <- c("presso_corrected.R", "../presso_corrected.R", "../../presso_corrected.R")
+.pc_hit  <- .pc_cand[file.exists(.pc_cand)]
+if (!length(.pc_hit)) stop("Cannot find presso_corrected.R at the repository root.")
+source(.pc_hit[1])
+
 
 # Load required libraries
 library(data.table)

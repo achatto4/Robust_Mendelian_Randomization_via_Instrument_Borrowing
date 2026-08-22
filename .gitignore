@@ -10,3 +10,6 @@
 
 # Generated figures (produced by the plotting scripts; not source)
 *.eps
+
+# NFS/FUSE artifacts
+.fuse_hidden*

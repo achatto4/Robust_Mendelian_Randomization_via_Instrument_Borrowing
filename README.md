@@ -23,11 +23,25 @@ Other R packages used: `TwoSampleMR`, `MendelianRandomization`, `MRMix`,
 ## Contents
 
 Simulation scripts are in [`simulation_code/`](simulation_code); real-data
-analysis scripts are in [`RDA_code/`](RDA_code). Scripts are provided for the
-directional-pleiotropy, InSIDE-violated scenario reported in the paper (other
-scenarios are obtained by changing the scenario parameters), with a
-representative real-data exposure analysis (`exposure_BMI.R`). GWAS summary
-statistics are not included; sources are listed in the paper's Data Availability.
+analysis scripts are in [`RDA_code/`](RDA_code). GWAS summary statistics are not
+included; sources are listed in the paper's Data Availability.
+
+The paper reports four simulation scenarios, crossing directional against
+balanced pleiotropy with the InSIDE assumption violated or satisfied. This
+repository provides the directional, InSIDE-violated scenario
+(`dir_noInside_paper.R`), which is the primary setting in the paper, together
+with the MR2 comparison (`dir_noInside_MR2.R`). Balanced pleiotropy is obtained
+by setting the mean of the direct-effect draws (`alpha`, `alpha_alt`) to zero;
+the InSIDE-satisfied variants additionally remove the confounder-mediated
+component `phi`, so they are not reachable by a parameter change alone.
+
+Real-data analysis is illustrated with one representative exposure
+(`exposure_BMI.R`); the remaining exposures follow the same structure, differing
+only in the trait read in and its declared primary and auxiliary outcomes.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
 
 ## Citation
 

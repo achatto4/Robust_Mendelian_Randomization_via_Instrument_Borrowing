@@ -4,6 +4,11 @@ if (!requireNamespace("IBMR", quietly = TRUE)) {
   stop("Package 'IBMR' is required. Install with: remotes::install_github('achatto4/IBMR')")
 }
 
+# Shared helper: reads MR-PRESSO's outlier-corrected row (repository root).
+.pc_cand <- c("presso_corrected.R", "../presso_corrected.R")
+.pc_hit  <- .pc_cand[file.exists(.pc_cand)]
+if (!length(.pc_hit)) stop("Cannot find presso_corrected.R at the repository root.")
+source(.pc_hit[1])
 
 # Cross-trait LDSC intercept helper for the IB-Mode C4 (outcome-sample-overlap) correction.
 # Resolved relative to common run locations; if absent, .LDSC_I stays NULL (independent bootstrap).
